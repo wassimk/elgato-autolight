@@ -176,6 +176,46 @@ fn uninstall_launchagent() -> Result<()> {
     Ok(())
 }
 
+fn stop_launchagent() -> Result<()> {
+    let target = format!("gui/{}/{LABEL}", current_uid());
+
+    let output = Command::new("launchctl")
+        .args(["bootout", &target])
+        .output()
+        .context("Failed to run launchctl bootout")?;
+
+    if output.status.success() {
+        println!("Service stopped.");
+    } else {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        if stderr.contains("No such process") || stderr.contains("Could not find service") {
+            println!("Service is not running.");
+        } else {
+            anyhow::bail!("Failed to stop service: {}", stderr.trim());
+        }
+    }
+
+    Ok(())
+}
+
+fn restart_launchagent() -> Result<()> {
+    let target = format!("gui/{}/{LABEL}", current_uid());
+
+    let output = Command::new("launchctl")
+        .args(["kickstart", "-k", &target])
+        .output()
+        .context("Failed to run launchctl kickstart")?;
+
+    if output.status.success() {
+        println!("Service restarted.");
+    } else {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        anyhow::bail!("Failed to restart service: {}", stderr.trim());
+    }
+
+    Ok(())
+}
+
 fn show_status() -> Result<()> {
     let config = load_config();
 
@@ -382,6 +422,10 @@ enum Cmd {
     },
     /// Uninstall the LaunchAgent
     Uninstall,
+    /// Stop the background service
+    Stop,
+    /// Restart the background service
+    Restart,
     /// Show running state, config, and log paths
     Status,
 }
@@ -395,6 +439,8 @@ fn main() -> Result<()> {
         Cmd::Start { verbose } => run_monitor(verbose),
         Cmd::Install { force } => install_launchagent(force),
         Cmd::Uninstall => uninstall_launchagent(),
+        Cmd::Stop => stop_launchagent(),
+        Cmd::Restart => restart_launchagent(),
         Cmd::Status => show_status(),
     }
 }
