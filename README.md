@@ -109,3 +109,13 @@ If `elgato-light` is not found, install it:
 ```shell
 brew install wassimk/tap/elgato-light
 ```
+
+### Background Activity Alert
+
+After installing, macOS may show this notification:
+
+<img src="assets/background-activity-alert.png" alt="App Background Activity alert" width="400" align="left">
+
+This is expected. The binary is signed with an Apple Developer certificate, so macOS displays the developer's name rather than the program name. This is just `elgato-autolight` running as a background service to monitor your camera. When your camera turns on, it switches your Elgato light on. When the camera turns off, it switches the light off. Nothing else.
+
+To stop or remove the service, run `elgato-autolight uninstall`.
