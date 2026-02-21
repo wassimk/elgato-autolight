@@ -112,7 +112,7 @@ brew install wassimk/tap/elgato-light
 
 ### Background Activity Alert
 
-After installing, macOS may show this notification:
+After installing, macOS may show this one-time notification:
 
 <img src="assets/background-activity-alert.png" alt="App Background Activity alert" width="400">
 
