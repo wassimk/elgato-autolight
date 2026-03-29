@@ -2,11 +2,11 @@
 
 Automatically toggle Elgato lights when your Mac camera activates. Monitors macOS camera events and shells out to [elgato-light](https://github.com/wassimk/elgato-light) to control your lights.
 
-### How It Works
+## 💡 How It Works
 
 The tool watches the macOS system log for UVC camera power events. When the camera turns on (e.g., joining a video call), it runs `elgato-light on`. When the camera turns off, it runs `elgato-light off`.
 
-### Install
+## 🛠️ Install
 
 ```shell
 brew install wassimk/tap/elgato-autolight
@@ -22,7 +22,7 @@ elgato-autolight install
 
 That's it. The light will now turn on and off automatically with your camera.
 
-### Usage
+## 💻 Usage
 
 ```
 $ elgato-autolight --help
@@ -68,7 +68,7 @@ Check the current state:
 elgato-autolight status
 ```
 
-### Configuration
+## ⚙️ Configuration
 
 Create `~/.config/elgato-autolight/config.toml` to override defaults:
 
@@ -81,14 +81,14 @@ temperature = 5000       # 2900-7000K, default 5000
 
 If the file is missing, defaults are used. No config file is created automatically.
 
-### Logs
+## 📋 Logs
 
 When running as a LaunchAgent, logs are written to:
 
 - `~/Library/Logs/elgato-autolight/stdout.log`
 - `~/Library/Logs/elgato-autolight/stderr.log`
 
-### Troubleshooting
+## 🔧 Troubleshooting
 
 Verify the service is running:
 
@@ -110,7 +110,7 @@ If `elgato-light` is not found, install it:
 brew install wassimk/tap/elgato-light
 ```
 
-### Background Activity Alert
+## ⚠️ Background Activity Alert
 
 After installing, macOS may show this one-time notification:
 
