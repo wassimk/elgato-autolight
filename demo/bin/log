@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Stands in for macOS `log stream` and plays a camera turning on, then off.
+power() {
+  echo "$(date '+%Y-%m-%d %H:%M:%S').000000-0500 0x1a2b Default 0x0 412 0 UVCAssistant: [com.apple.UVCExtension:device] Post PowerLog { \"VDCAssistant_Power_State\" = $1; }"
+}
+
+sleep "${DEMO_CAMERA_ON_AFTER:-3}"
+power On
+sleep 5
+power Off
+exec sleep 3600

@@ -2,6 +2,8 @@
 
 Automatically toggle Elgato lights when your Mac camera activates. Monitors macOS camera events and shells out to [elgato-light](https://github.com/wassimk/elgato-light) to control your lights.
 
+![elgato-autolight demo](demo/elgato-autolight.gif)
+
 ## 💡 How It Works
 
 The tool watches the macOS system log for UVC camera power events. When the camera turns on (e.g., joining a video call), it runs `elgato-light on`. When the camera turns off, it runs `elgato-light off`.
