@@ -1,12 +1,22 @@
-name: update-homebrew
+name: Update Homebrew
 
 on:
+  # zizmor: ignore[dangerous-triggers] fires only on this repo's own Release workflow; it never checks out or runs code from the triggering ref
   workflow_run:
-    workflows: [release]
+    workflows: [Release]
     types: [completed]
+
+# The tap push uses HOMEBREW_TAP_TOKEN; GITHUB_TOKEN only reads this repo's releases
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 
 jobs:
   update-formula:
+    name: Update Formula
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
@@ -23,12 +33,13 @@ jobs:
 
       - name: Download SHA-256 checksums
         run: |
-          gh release download "${{ steps.version.outputs.tag }}" \
+          gh release download "$TAG" \
             --repo wassimk/elgato-autolight \
             --pattern '*-sha.txt' \
             --dir checksums
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.version.outputs.tag }}
 
       - name: Parse checksums
         id: shas
@@ -43,19 +54,23 @@ jobs:
             esac
           done
 
-      - name: Checkout homebrew-tap
-        uses: actions/checkout@v4
+      - name: Checkout homebrew-tap # zizmor: ignore[artipacked] the last step pushes to the tap with HOMEBREW_TAP_TOKEN
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: wassimk/homebrew-tap
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
 
       - name: Update formula
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          DARWIN_ARM64_SHA: ${{ steps.shas.outputs.darwin_arm64 }}
+          DARWIN_X86_64_SHA: ${{ steps.shas.outputs.darwin_x86_64 }}
         run: |
-          cat > Formula/elgato-autolight.rb << 'RUBY'
+          cat > Formula/elgato-autolight.rb << RUBY
           class ElgatoAutolight < Formula
             desc "Automatically toggle Elgato lights when your Mac camera activates"
             homepage "https://github.com/wassimk/elgato-autolight"
-            version "${{ steps.version.outputs.version }}"
+            version "$VERSION"
             license "MIT"
 
             depends_on "wassimk/tap/elgato-light"
@@ -63,10 +78,10 @@ jobs:
 
             if Hardware::CPU.arm?
               url "https://github.com/wassimk/elgato-autolight/releases/download/v#{version}/elgato-autolight-Darwin-aarch64.tar.gz"
-              sha256 "${{ steps.shas.outputs.darwin_arm64 }}"
+              sha256 "$DARWIN_ARM64_SHA"
             elsif Hardware::CPU.intel?
               url "https://github.com/wassimk/elgato-autolight/releases/download/v#{version}/elgato-autolight-Darwin-x86_64.tar.gz"
-              sha256 "${{ steps.shas.outputs.darwin_x86_64 }}"
+              sha256 "$DARWIN_X86_64_SHA"
             end
 
             def install
@@ -93,10 +108,12 @@ jobs:
         run: sed -i 's/^          //' Formula/elgato-autolight.rb
 
       - name: Commit and push
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add Formula/elgato-autolight.rb
           git diff --cached --quiet && echo "No changes to commit" && exit 0
-          git commit -m "feat: update elgato-autolight to ${{ steps.version.outputs.version }}"
+          git commit -m "feat: update elgato-autolight to $VERSION"
           git push
