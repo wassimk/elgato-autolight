@@ -1,12 +1,21 @@
-name: update-homebrew
+name: Update Homebrew
 
 on:
   workflow_run:
-    workflows: [release]
+    workflows: [Release]
     types: [completed]
+
+# The tap push uses HOMEBREW_TAP_TOKEN; GITHUB_TOKEN only reads this repo's releases
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 
 jobs:
   update-formula:
+    name: Update Formula
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 

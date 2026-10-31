@@ -1,15 +1,21 @@
-name: release
+name: Release
 
 on:
   release:
     types: [created]
 
 permissions:
-  contents: write
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   release:
     name: Release - ${{ matrix.platform.release_for }}
+    permissions:
+      contents: write # softprops/action-gh-release uploads the release assets
     strategy:
       matrix:
         platform:
